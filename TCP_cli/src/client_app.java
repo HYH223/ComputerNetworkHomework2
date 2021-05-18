@@ -48,6 +48,7 @@ class Client extends Thread {
 			OutputStream os = socket.getOutputStream();
 			DataOutputStream dos = new DataOutputStream(os);
 			Scanner sn = new Scanner(System.in);
+			String msg = "";
 
 			System.out.println("Command(Hi, CurrentTime, ConnectionTime, ClientList, Quit)※대소문자를 구분합니다.");
 			while (run) {
@@ -55,37 +56,32 @@ class Client extends Thread {
 				String command = sn.nextLine();
 				if (command.equals("Hi")) {
 					this.cid = client_app.cid;
-					System.out.println(custom_base64(Request("Hi")));
 					dos.writeUTF(Request("Hi"));
-					System.out.println(dis.readUTF());
 				}
 
-				else if (command.equals("CurrentTime")) {
+				else if (command.equals("CurrentTime"))
 					dos.writeUTF(Request("CurrentTime"));
-					System.out.println(dis.readUTF());
-				}
 
-				else if (command.equals("ConnectionTime")) {
+				else if (command.equals("ConnectionTime"))
 					dos.writeUTF(Request("ConnectionTime"));
-					System.out.println(dis.readUTF());
-				}
 
-				else if (command.equals("ClientList")) {
+				else if (command.equals("ClientList"))
 					dos.writeUTF(Request("ClientList"));
-					System.out.println(dis.readUTF());
-				}
 
 				else if (command.equals("Quit")) {
 					dos.writeUTF(Request("Quit"));
-					System.out.println(dis.readUTF());
 					run = false;
 				}
 
-				else {
+				else
 					dos.writeUTF(Request(command));
-					System.out.println(dis.readUTF());
-				}
-				System.out.println("");
+
+				msg = dis.readUTF();
+				System.out.println(msg);
+				msg = custom_base64_decoder(msg);
+				System.out.println(msg);
+				String[] array = msg.split("///");
+				System.out.println(array[2]);
 			}
 			System.out.println("이용해주셔서 감사합니다.");
 
@@ -98,20 +94,21 @@ class Client extends Thread {
 		String msg = "Type:type1///Request:" + request + "///cid:" + this.cid + "///Num_Req:" + client_app.Num_req
 				+ "///END_MSG";
 		client_app.Num_req++;
-		return msg;
+		System.out.println(custom_base64_encoder(msg));
+		return custom_base64_encoder(msg);
 	}
 
-	String custom_base64(String text) {
+	String custom_base64_encoder(String text) {
 		int count = 0;
 		String utf_8_msg = "";
 		String base64_msg = "";
-		String[] temp = new String[100];
+		String[] temp = new String[966];
 		String key = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
 		String words = text;
 
 		for (byte b : words.getBytes(StandardCharsets.UTF_8)) {
-			utf_8_msg += bytesToBinaryString((byte) b);
+			utf_8_msg += bytesTobinary((byte) b);
 		}
 
 		int num = utf_8_msg.length() / 8;
@@ -162,11 +159,69 @@ class Client extends Thread {
 		return base64_msg;
 	}
 
-	static String bytesToBinaryString(Byte b) {
+	static String bytesTobinary(Byte b) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < 8; i++) {
-			builder.append(((0x80 >>> i) & b) == 0 ? '0' : '1');
+			if (((0x80 >>> i) & b) == 0)
+				builder.append("0");
+			else
+				builder.append("1");
 		}
 		return builder.toString();
 	}
+
+	String custom_base64_decoder(String text) throws Exception {
+		String key = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+		String[] array = text.split("");
+		int temp;
+		int i = 0;
+		String decoding_msg = "";
+		for (int count = 0; count < array.length; count++) {
+			temp = key.indexOf(array[count]);
+			if (temp == 64) {
+				temp = 0;
+				i++;
+			}
+			decoding_msg += String.format("%6s", Integer.toBinaryString(temp)).replaceAll(" ", "0");
+		}
+
+		switch (i) {
+		case 0:
+			break;
+		case 1:
+			decoding_msg = decoding_msg.substring(0, decoding_msg.length() - 8);
+			break;
+		case 2:
+			decoding_msg = decoding_msg.substring(0, decoding_msg.length() - 16);
+			break;
+		default:
+			System.out.print("error");
+		}
+		byte[] b = binaryTobyteArray(decoding_msg);
+		return new String(b, "UTF-8");
+
+	}
+
+	static byte[] binaryTobyteArray(String str) {
+		int count = str.length() / 8;
+		byte[] b = new byte[count];
+		for (int i = 0; i < count; i++) {
+			String temp = str.substring(i * 8, (i + 1) * 8);
+			b[i] = binaryTobyte(temp);
+		}
+		return b;
+	}
+
+	static byte binaryTobyte(String str) {
+		byte temp = 0, total = 0;
+		for (int i = 0; i < 8; i++) {
+			if (str.charAt(7 - i) == '1')
+				temp = (byte) (1 << i);
+			else
+				temp = 0;
+			total = (byte) (temp | total);
+		}
+		return total;
+	}
+
 }
