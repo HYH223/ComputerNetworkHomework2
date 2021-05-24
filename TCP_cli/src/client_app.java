@@ -33,6 +33,7 @@ public class client_app {
 class Client extends Thread {
 	Socket socket;
 	String cid = "noname";
+	byte[] base64_msg;
 
 	Client(Socket _socket) {
 		this.socket = _socket;
@@ -76,13 +77,9 @@ class Client extends Thread {
 					dos.writeUTF(Request(command));
 
 				msg = dis.readUTF();
-<<<<<<< HEAD
 				System.out.println("서버에서 받아온 인코딩된 메세지 : "+msg);
 				msg = custom_base64_decoder(msg);
 				System.out.println("서버에서 받아온 디코딩된 메세지 : "+msg);
-=======
-				System.out.println(msg);
->>>>>>> 6721abc214354caa40feabf8b83d500433919cfc
 				String[] array = msg.split("///");
 				System.out.println(array[2]);
 			}
@@ -97,7 +94,6 @@ class Client extends Thread {
 		String msg = "Type:type1///Request:" + request + "///cid:" + this.cid + "///Num_Req:" + client_app.Num_req
 				+ "///END_MSG";
 		client_app.Num_req++;
-<<<<<<< HEAD
 		System.out.println("클라이언트에서 인코딩된 메세지 : "+custom_base64_encoder(msg));
 		return custom_base64_encoder(msg);
 	}
@@ -226,9 +222,6 @@ class Client extends Thread {
 			total = (byte) (temp | total);
 		}
 		return total;
-=======
-		return msg;
->>>>>>> 6721abc214354caa40feabf8b83d500433919cfc
 	}
 
 }
