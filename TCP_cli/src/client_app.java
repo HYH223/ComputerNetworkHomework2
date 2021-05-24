@@ -77,9 +77,9 @@ class Client extends Thread {
 					dos.writeUTF(Request(command));
 
 				msg = dis.readUTF();
-				System.out.println(msg);
+				System.out.println("서버에서 받아온 인코딩된 메세지 : "+msg);
 				msg = custom_base64_decoder(msg);
-				System.out.println(msg);
+				System.out.println("서버에서 받아온 디코딩된 메세지 : "+msg);
 				String[] array = msg.split("///");
 				System.out.println(array[2]);
 			}
@@ -94,7 +94,7 @@ class Client extends Thread {
 		String msg = "Type:type1///Request:" + request + "///cid:" + this.cid + "///Num_Req:" + client_app.Num_req
 				+ "///END_MSG";
 		client_app.Num_req++;
-		System.out.println(custom_base64_encoder(msg));
+		System.out.println("클라이언트에서 인코딩된 메세지 : "+custom_base64_encoder(msg));
 		return custom_base64_encoder(msg);
 	}
 
